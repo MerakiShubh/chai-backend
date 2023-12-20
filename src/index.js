@@ -7,7 +7,39 @@ dotenv.config({
   path: "./env",
 });
 
-connectDB();
+connectDB()
+  .then(() => {
+    app.listen(process.env.PORT || 8000),
+      () => {
+        console.log(`Server is running at port: ${process.env.PORT}`);
+      };
+  })
+  .catch((err) => {
+    console.log("Mongo db connection failed !!!", err);
+  });
+
+// process.on("unhandledRejection", (reason, promise) => {
+//   console.error("Unhandled Rejection at:", promise, "reason:", reason);
+
+//   process.exit(1);
+// });
+
+// .then(() => {
+//   //Handling error before connection
+//   // app.on("error", (error) => {
+//   //   console.log("ERROR: ", error);
+//   // });
+
+//   app.listen(process.env.PORT || 8000, () => {
+//     console.log(`Server is running at port:  ${process.env.PORT}`);
+//   });
+// })
+// //Handling error after connection
+
+// .catch((err) => {
+//   console.log("Mongo DB connection failed !!!");
+//   process.exit(1);
+// });
 
 // import mongoose from "mongoose";
 // import { DB_NAME } from "./constants";
