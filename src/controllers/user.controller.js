@@ -23,7 +23,7 @@ const registerUser = asyncHandler((req, res) => {
 
   // const existedUser = User.findOne({
   //   $or: [{ username }, { email }],
-  // });
+  // });1
   // if (existedUser) {
   //   throw new ApiError(409, "User with email or username is already exists");
   // }
