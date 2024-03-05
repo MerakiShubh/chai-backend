@@ -13,18 +13,20 @@ const registerUser = asyncHandler((req, res) => {
   //return response
 
   const { username, fullName, email, password } = req.body;
-  if (
-    [username, fullName, email, password].some((field) => field?.trim() === "")
-  ) {
-    throw new ApiError(400, "All fields are required");
-  }
+  console.log("email", email);
+  res.json("Hello");
+  // if (
+  //   [username, fullName, email, password].some((field) => field?.trim() === "")
+  // ) {
+  //   throw new ApiError(400, "All fields are required");
+  // }
 
-  const existedUser = User.findOne({
-    $or: [{ username }, { email }],
-  });
-  if (existedUser) {
-    throw new ApiError(409, "User with email or username is already exists");
-  }
+  // const existedUser = User.findOne({
+  //   $or: [{ username }, { email }],
+  // });
+  // if (existedUser) {
+  //   throw new ApiError(409, "User with email or username is already exists");
+  // }
 });
 
 export { registerUser };
