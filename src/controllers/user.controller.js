@@ -9,7 +9,6 @@ const generateAccessAndRefereshTokens = async (userId) => {
     const user = await User.findById(userId);
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
-
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
 
@@ -45,7 +44,6 @@ const registerUser = asyncHandler(async (req, res) => {
   const existedUser = await User.findOne({
     $or: [{ username }, { email }],
   });
-  console.log("user is here", existedUser);
 
   if (existedUser) {
     throw new ApiError(409, "User with email or username already exists");
@@ -53,7 +51,6 @@ const registerUser = asyncHandler(async (req, res) => {
   //console.log(req.files);
 
   const avatarLocalPath = req.files?.avatar[0]?.path;
-  console.log("avatar ke local path yaha hai", avatarLocalPath);
 
   //const coverImageLocalPath = req.files?.coverImage[0]?.path;
 
@@ -71,7 +68,6 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   const avatar = await uploadOnCloudinary(avatarLocalPath);
-  console.log("upload hone ke baad avatar yaha hai", avatar);
 
   const coverImage = await uploadOnCloudinary(coverImageLocalPath);
 
@@ -110,7 +106,7 @@ const loginUser = asyncHandler(async (req, res) => {
   //send cookie
 
   const { email, username, password } = req.body;
-  console.log(email);
+  // console.log(email);
 
   if (!username && !email) {
     throw new ApiError(400, "username or email is required");
