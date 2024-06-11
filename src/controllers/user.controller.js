@@ -38,7 +38,6 @@ const registerUser = asyncHandler(async (req, res) => {
   // return res
 
   const { fullName, email, username, password } = req.body;
-  //console.log("email: ", email);
 
   if (
     [fullName, email, username, password].some((field) => field?.trim() === "")
@@ -53,11 +52,8 @@ const registerUser = asyncHandler(async (req, res) => {
   if (existedUser) {
     throw new ApiError(409, "User with email or username already exists");
   }
-  //console.log(req.files);
 
   const avatarLocalPath = req.files?.avatar[0]?.path;
-
-  //const coverImageLocalPath = req.files?.coverImage[0]?.path;
 
   let coverImageLocalPath;
   if (
@@ -111,7 +107,6 @@ const loginUser = asyncHandler(async (req, res) => {
   //send cookie
 
   const { email, username, password } = req.body;
-  // console.log(email);
 
   if (!username && !email) {
     throw new ApiError(400, "username or email is required");
@@ -328,6 +323,15 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
   }
 
   // TODO: delete old cover image
+  const user = await User.findById(req.user?._id);
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+  const oldCoverImageUrl = user.coverImage;
+  if (oldCoverImageUrl) {
+    const publicId = oldCoverImageUrl.split("/").pop().split(".")[0];
+    deletefromCloudinary(publicId);
+  }
 
   const coverImage = await uploadOnCloudinary(coverImageLocalPath);
 
@@ -335,7 +339,7 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Error while uploading cover image");
   }
 
-  const user = User.findByIdAndUpdate(
+  const updatedUser = await User.findByIdAndUpdate(
     req.user?._id,
     {
       $set: {
@@ -347,7 +351,7 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, user, "CoverImage updated successfully"));
+    .json(new ApiResponse(200, updatedUser, "CoverImage updated successfully"));
 });
 
 const getUserChannelProfile = asyncHandler(async (req, res) => {
