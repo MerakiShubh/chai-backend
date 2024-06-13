@@ -184,6 +184,44 @@ const updateVideo = asyncHandler(async (req, res) => {
 const deleteVideo = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
   //TODO: delete video
+  if (!videoId) throw new ApiError(400, "Video id is required");
+
+  try {
+    const video = await Video.findById(videoId);
+    if (!video) throw new ApiError(404, "Video doesn't exist");
+
+    if (video.owner.toString() !== req.user?._id.toString()) {
+      throw new ApiError(403, "Not authorized to delete this video");
+    }
+
+    const videoFileUrl = video.videoFile;
+    if (videoFileUrl) {
+      const publicId = videoFileUrl.split("/").pop().split(".")[0];
+      try {
+        await deletefromCloudinary(publicId);
+      } catch (error) {
+        console.error("Error deleting from Cloudinary:", error);
+        throw new ApiError(500, "Failed to delete video from Cloudinary");
+      }
+    }
+
+    try {
+      await Video.findByIdAndDelete(videoId);
+    } catch (error) {
+      throw new ApiError(500, "Error deleting video from the database");
+    }
+
+    res
+      .status(200)
+      .json(new ApiResponse(200, {}, "Video deleted successfully"));
+  } catch (error) {
+    console.error("Error during video deletion:", error);
+    if (error instanceof ApiError) {
+      res.status(error.statusCode).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: "An unexpected error occurred" });
+    }
+  }
 });
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
