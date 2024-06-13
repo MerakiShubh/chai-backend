@@ -7,7 +7,55 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 const getAllVideos = asyncHandler(async (req, res) => {
+  const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
   //TODO: get all videos based on query, sort, pagination
+  console.log(new mongoose.Types.ObjectId(userId));
+  const myAggregate = Video.aggregate([
+    {
+      $match: {
+        $or: [
+          { title: { $regex: query, $options: "i" } },
+          { description: { $regex: query, $options: "i" } },
+        ],
+        ...(userId && { owner: new mongoose.Types.ObjectId(userId) }),
+      },
+    },
+    {
+      $sort: {
+        [sortBy]: sortType === "desc" ? -1 : 1,
+      },
+    },
+  ]);
+  // console.log("MyAggregate", JSON.stringify(myAggregate, null, 2));
+  console.log("MyAggregate", myAggregate);
+
+  const options = {
+    page: parseInt(page, 10),
+    limit: parseInt(limit, 10),
+    customLabels: {
+      totalDocs: "totalResults",
+      docs: "videos",
+      limit: "pageSize",
+      page: "currentPage",
+      totalPages: "totalPages",
+      nextPage: "nextPage",
+      prevPage: "prevPage",
+      pagingCounter: "pagingCounter",
+      meta: "pagination",
+    },
+  };
+
+  try {
+    const result = await Video.aggregatePaginate(myAggregate, options);
+    res
+      .status(200)
+      .json(new ApiResponse(201, result, "Videos fetched successfully"));
+  } catch (error) {
+    throw new ApiError(
+      501,
+      error?.message || "Error while fetching videos from database"
+    );
+  }
 });
 
 const publishAVideo = asyncHandler(async (req, res) => {
