@@ -105,6 +105,20 @@ const addComment = asyncHandler(async (req, res) => {
 
 const updateComment = asyncHandler(async (req, res) => {
   // TODO: update a comment
+  const { commentId } = req.params;
+  const { content } = req.body;
+  if (!commentId) throw new ApiError(400, "CommentId is missing");
+  if (!content || content.trim() === "")
+    throw new ApiError(400, "Content is missing");
+  const comment = await Comment.findById(commentId);
+  if (!comment) throw new ApiError(404, "Comment does not exist");
+  if (comment.owner.toString() !== req.user?._id.toString())
+    throw new ApiError(404, "Unauthorized user to edit comment");
+  comment.content = content;
+  await comment.save();
+  res
+    .status(200)
+    .json(new ApiResponse(200, comment, "Comment edited successfully"));
 });
 
 const deleteComment = asyncHandler(async (req, res) => {
