@@ -200,8 +200,10 @@ const deleteVideo = asyncHandler(async (req, res) => {
       try {
         await deletefromCloudinary(publicId);
       } catch (error) {
-        console.error("Error deleting from Cloudinary:", error);
-        throw new ApiError(500, "Failed to delete video from Cloudinary");
+        throw new ApiError(
+          500,
+          error?.message || "Failed to delete video from Cloudinary"
+        );
       }
     }
 
@@ -226,6 +228,28 @@ const deleteVideo = asyncHandler(async (req, res) => {
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
+  if (!videoId) throw new ApiError(400, "Video Id is required");
+  try {
+    const video = await Video.findByIdAndUpdate(
+      videoId,
+      [
+        {
+          $set: {
+            isPublished: { $not: ["$isPublished"] },
+          },
+        },
+      ],
+      { new: true }
+    );
+    if (!video) throw new ApiError(400, "Video does'nt exist");
+    res
+      .status(200)
+      .json(
+        new ApiResponse(200, video, "Video publish status toggled successfully")
+      );
+  } catch (error) {
+    throw new ApiError(500, error?.message || "Error occured while toggling");
+  }
 });
 
 export {
