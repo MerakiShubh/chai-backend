@@ -8,7 +8,78 @@ import { Video } from "../models/video.model.js";
 const getVideoComments = asyncHandler(async (req, res) => {
   //TODO: get all comments for a video
   const { videoId } = req.params;
-  const { page = 1, limit = 10 } = req.query;
+  const { page, limit } = req.query;
+
+  if (!videoId || !mongoose.Types.ObjectId.isValid(videoId)) {
+    throw new ApiError(400, "Valid video id is required");
+  }
+
+  const myAggregate = Comment.aggregate([
+    {
+      $match: {
+        video: new mongoose.Types.ObjectId(videoId),
+      },
+    },
+    {
+      $sort: {
+        createdAt: -1,
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "owner",
+        foreignField: "_id",
+        as: "owner",
+      },
+    },
+    {
+      $addFields: {
+        owner: {
+          $arrayElemAt: ["$owner", 0],
+        },
+      },
+    },
+    {
+      $project: {
+        content: 1,
+        createdAt: 1,
+        owner: {
+          _id: "$owner._id",
+          username: "$owner.username",
+          avatar: "$owner.avatar",
+        },
+      },
+    },
+  ]);
+
+  const options = {
+    page: parseInt(page, 10),
+    limit: parseInt(limit, 10),
+    customLabels: {
+      totalDocs: "totalResults",
+      docs: "comments",
+      limit: "pageSize",
+      page: "currentPage",
+      totalPages: "totalPages",
+      nextPage: "nextPage",
+      prevPage: "prevPage",
+      pagingCounter: "pagingCounter",
+      meta: "pagination",
+    },
+  };
+
+  try {
+    const comments = await Comment.aggregatePaginate(myAggregate, options);
+    res
+      .status(200)
+      .json(new ApiResponse(200, comments, "Comment is fetch successfuly"));
+  } catch (error) {
+    throw new ApiError(
+      400,
+      error?.message || "Error occurred while fetching comments"
+    );
+  }
 });
 
 const addComment = asyncHandler(async (req, res) => {
