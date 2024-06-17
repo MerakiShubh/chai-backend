@@ -42,6 +42,23 @@ const getPlaylistById = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, playlist, "Playlist fetched successfully"));
 });
 
+const addVideoToPlaylist = asyncHandler(async (req, res) => {
+  const { playlistId, videoId } = req.params;
+  if (!isValidObjectId(playlistId) || !isValidObjectId(videoId))
+    throw new ApiError(400, "Valid playlist id and video id is required");
+  const playlist = await Playlist.findById(playlistId);
+  if (!playlist) throw new ApiError(404, "Playlist not found");
+  if (playlist.videos.includes(videoId))
+    throw new ApiError(400, "Video is already exist in playlist");
+  playlist.videos.push(videoId);
+  await playlist.save();
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, playlist, "Video added successfully to playlist")
+    );
+});
+
 export {
   createPlaylist,
   getUserPlaylists,
