@@ -30,6 +30,18 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, playlists, "Playlist fetched successfully"));
 });
 
+const getPlaylistById = asyncHandler(async (req, res) => {
+  const { playlistId } = req.params;
+  //TODO: get playlist by id
+  if (!isValidObjectId(playlistId))
+    throw new ApiError(404, "Not a valid playlist id");
+  const playlist = await Playlist.findById(playlistId).populate("videos");
+  if (!playlist) throw new ApiError(404, "Playlist does not exist");
+  res
+    .status(200)
+    .json(new ApiResponse(200, playlist, "Playlist fetched successfully"));
+});
+
 export {
   createPlaylist,
   getUserPlaylists,
