@@ -90,6 +90,32 @@ const deletePlaylist = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Playlist deleted successfully"));
 });
 
+const updatePlaylist = asyncHandler(async (req, res) => {
+  const { playlistId } = req.params;
+  const { name, description } = req.body;
+  //TODO: update playlist
+  if (!isValidObjectId(playlistId))
+    throw new ApiError(400, "Valid playlist id is required");
+  if (!name || name.trim() === "" || !description || description.trim() === "")
+    throw new ApiError(400, "Name or description is required");
+  const updatedPlaylist = await Playlist.findByIdAndUpdate(
+    playlistId,
+    {
+      $set: {
+        name,
+        description,
+      },
+    },
+    { new: true }
+  );
+  if (!updatePlaylist) throw new ApiError(404, "Playlist not found");
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, updatedPlaylist, "Playlist updated successfully")
+    );
+});
+
 export {
   createPlaylist,
   getUserPlaylists,
