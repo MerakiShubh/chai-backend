@@ -24,7 +24,8 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
   //TODO: get user playlists
   if (!isValidObjectId(userId)) throw new ApiError(400, "User Id is required");
   const playlists = await Playlist.find({ owner: userId });
-  if (!playlists) throw new ApiError(404, "No playlist found for this user");
+  if (!Array.isArray(playlists) || playlists.length === 0)
+    throw new ApiError(404, "No playlist found for this user");
   res
     .status(200)
     .json(new ApiResponse(200, playlists, "Playlist fetched successfully"));
@@ -108,7 +109,7 @@ const updatePlaylist = asyncHandler(async (req, res) => {
     },
     { new: true }
   );
-  if (!updatePlaylist) throw new ApiError(404, "Playlist not found");
+  if (!updatedPlaylist) throw new ApiError(404, "Playlist not found");
   res
     .status(200)
     .json(
