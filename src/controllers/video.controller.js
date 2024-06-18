@@ -12,7 +12,7 @@ import {
 const getAllVideos = asyncHandler(async (req, res) => {
   const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
   //TODO: get all videos based on query, sort, pagination
-  console.log(new mongoose.Types.ObjectId(userId));
+  // console.log(new mongoose.Types.ObjectId(userId));
   const myAggregate = Video.aggregate([
     {
       $match: {
@@ -30,7 +30,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
     },
   ]);
   // console.log("MyAggregate", JSON.stringify(myAggregate, null, 2));
-  console.log("MyAggregate", myAggregate);
+  // console.log("MyAggregate", myAggregate);
 
   const options = {
     page: parseInt(page, 10),
