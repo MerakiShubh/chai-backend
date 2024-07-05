@@ -85,21 +85,52 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
 });
 
 const getLikedVideos = asyncHandler(async (req, res) => {
-  //TODO: get all liked videos
+  // Get the authenticated user's ID
   const userId = req.user._id;
 
-  const likedVideos = await Like.find({
-    likedBy: userId,
-    video: { $exists: true },
-  }).populate("video");
+  try {
+    const likedVideos = await Like.find({
+      likedBy: userId,
+      video: { $exists: true },
+    })
+      .populate({
+        path: "video",
+        populate: {
+          path: "owner",
+          select: "fullName avatar username", // Select the fields you want from the owner
+        },
+      })
+      .exec();
 
-  if (!likedVideos.length) throw new ApiError(404, "No liked videos found");
+    if (!likedVideos.length) throw new ApiError(404, "No liked videos found");
 
-  res
-    .status(200)
-    .json(
-      new ApiResponse(200, likedVideos, "Liked videos fetched successfully")
-    );
+    const response = likedVideos
+      .map((like) => {
+        if (!like.video) {
+          console.error("Video is null for like:", like);
+          return null;
+        }
+        return {
+          ...like.toObject(),
+          video: {
+            ...like.video.toObject(),
+            ownerInfo: like.video.owner ? like.video.owner.toObject() : null, // Add ownerInfo to video object
+          },
+        };
+      })
+      .filter((item) => item !== null);
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(200, response, "Liked videos fetched successfully")
+      );
+  } catch (error) {
+    console.error("Error fetching liked videos:", error);
+    res
+      .status(500)
+      .json(new ApiResponse(500, null, "Failed to fetch liked videos"));
+  }
 });
 
 export { toggleCommentLike, toggleTweetLike, toggleVideoLike, getLikedVideos };

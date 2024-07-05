@@ -92,10 +92,25 @@ const registerUser = asyncHandler(async (req, res) => {
   if (!createdUser) {
     throw new ApiError(500, "Something went wrong while registering the user");
   }
+  const options = {
+    httpOnly: true,
+    secure: false,
+  };
+  const { accessToken, refreshToken } = await generateAccessAndRefereshTokens(
+    user._id
+  );
 
   return res
     .status(201)
-    .json(new ApiResponse(200, createdUser, "User registered Successfully"));
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+      new ApiResponse(
+        200,
+        { createdUser, accessToken },
+        "User registered Successfully"
+      )
+    );
 });
 
 const loginUser = asyncHandler(async (req, res) => {
@@ -142,7 +157,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
   const options = {
     httpOnly: true,
-    secure: true,
+    secure: false,
   };
 
   return res
@@ -155,7 +170,6 @@ const loginUser = asyncHandler(async (req, res) => {
         {
           user: loggedInUser,
           accessToken,
-          refreshToken,
         },
         "User logged In Successfully"
       )
@@ -211,7 +225,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
     const options = {
       httpOnly: true,
-      secure: true,
+      secure: false,
     };
 
     const { accessToken, newRefreshToken } =

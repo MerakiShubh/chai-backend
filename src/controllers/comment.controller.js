@@ -6,12 +6,11 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { Video } from "../models/video.model.js";
 
 const getVideoComments = asyncHandler(async (req, res) => {
-  //TODO: get all comments for a video
   const { videoId } = req.params;
   const { page = 1, limit = 10 } = req.query;
 
   if (!videoId || !mongoose.Types.ObjectId.isValid(videoId)) {
-    throw new ApiError(400, "Valid video id is required");
+    throw new ApiError(400, "Valid video ID is required");
   }
 
   const myAggregate = Comment.aggregate([
@@ -34,11 +33,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
       },
     },
     {
-      $addFields: {
-        owner: {
-          $arrayElemAt: ["$owner", 0],
-        },
-      },
+      $unwind: "$owner",
     },
     {
       $project: {
@@ -73,11 +68,11 @@ const getVideoComments = asyncHandler(async (req, res) => {
     const comments = await Comment.aggregatePaginate(myAggregate, options);
     res
       .status(200)
-      .json(new ApiResponse(200, comments, "Comment is fetch successfuly"));
+      .json(new ApiResponse(200, comments, "Comments fetched successfully"));
   } catch (error) {
     throw new ApiError(
-      400,
-      error?.message || "Error occurred while fetching comments"
+      500,
+      error.message || "Error occurred while fetching comments"
     );
   }
 });
