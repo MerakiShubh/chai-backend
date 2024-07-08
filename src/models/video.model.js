@@ -48,4 +48,17 @@ const videoSchema = new Schema(
 
 videoSchema.plugin(mongooseAggregatePaginate);
 
+// Pre-save hook to ensure HTTPS URLs
+videoSchema.pre("save", function (next) {
+  if (this.videoFile && this.videoFile.startsWith("http://")) {
+    this.videoFile = this.videoFile.replace("http://", "https://");
+  }
+
+  if (this.thumbnail && this.thumbnail.startsWith("http://")) {
+    this.thumbnail = this.thumbnail.replace("http://", "https://");
+  }
+
+  next();
+});
+
 export const Video = mongoose.model("Video", videoSchema);
