@@ -29,10 +29,6 @@ const addToWatchHistory = asyncHandler(async (req, res) => {
       (v) => v.video.toString() === videoId
     );
     if (videoIndex !== -1) {
-      console.log(
-        "Video already in watch history, removing from current position",
-        { videoId }
-      );
       watchHistory.videos.splice(videoIndex, 1);
     }
 
