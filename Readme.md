@@ -27,12 +27,7 @@ videoTube is a comprehensive video platform where users can:
 ## Demo
 
 Watch the demo video for a walkthrough of the project:
-[![Watch the video](./public/assets/video-thumbnail.jpg)](./public/assets/videoTube.mp4)
-
-<video width="600" controls>
-  <source src="./public/assets/videoTube.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+[![Watch the video](./public/assets/video-thumbnail.jpg)](https://vimeo.com/982999217?share=copy)
 
 ## Live Project
 
